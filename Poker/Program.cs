@@ -387,7 +387,7 @@ namespace Poker  // demander si le fait
                     }
                 }
 
-                if (reponse == "3")
+                if (reponse == "3") // réponse 3 = fin donc le jeux se ferme 
                     break;
 
             }
