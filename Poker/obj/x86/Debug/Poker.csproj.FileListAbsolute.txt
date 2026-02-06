@@ -107,3 +107,8 @@ D:\cour\BTS\SLAM\Mr.R\Poker\Poker\obj\x86\Debug\Poker.csproj.CoreCompileInputs.c
 E:\cour\BTS\SLAM\Mr.R\Poker\Poker\obj\x86\Debug\Poker.csproj.AssemblyReference.cache
 E:\cour\BTS\SLAM\Mr.R\Poker\Poker\obj\x86\Debug\Poker.exe.config
 E:\cour\BTS\SLAM\Mr.R\Poker\Poker\obj\x86\Debug\Poker.csproj.CoreCompileInputs.cache
+E:\cour\BTS\SLAM\Mr.R\Poker\Poker\bin\Debug\Poker.exe.config
+E:\cour\BTS\SLAM\Mr.R\Poker\Poker\bin\Debug\Poker.exe
+E:\cour\BTS\SLAM\Mr.R\Poker\Poker\bin\Debug\Poker.pdb
+E:\cour\BTS\SLAM\Mr.R\Poker\Poker\obj\x86\Debug\Poker.exe
+E:\cour\BTS\SLAM\Mr.R\Poker\Poker\obj\x86\Debug\Poker.pdb

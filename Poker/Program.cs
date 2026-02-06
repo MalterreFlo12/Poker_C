@@ -62,16 +62,15 @@ namespace Poker  // demander si le fait
 
         //----------
         // FONCTIONS
-        //----------
-
+        //---------- 
         // Génère aléatoirement une carte : {valeur;famille}
         // Retourne une expression de type "structure carte"
+        private static Random rand = new Random();
         public static carte tirage()
         {
-            carte carte;             
-            Random rand = new Random();
-            int valeur = rand.Next(0,12);
-            int famille = rand.Next(0,3);// tirage aléatoir / le .Next permet determiner la tranche de numéro voulue et d'en recupéré un aléatoirement 
+            carte carte;
+            int valeur = rand.Next(0,13);
+            int famille = rand.Next(0,4);// tirage aléatoir / le .Next permet determiner la tranche de numéro voulue et d'en recupéré un aléatoirement 
             carte.valeur = valeurs[valeur];// la valeur de la carte est = a l'indice dans la liste valeurs 
             carte.famille = familles[famille];// ... dans la liste familles
             return carte;
@@ -193,11 +192,17 @@ namespace Poker  // demander si le fait
 
         // Tirage d'un jeu de 5 cartes
         // Paramètre : le tableau de 5 cartes à remplir
-        private static void tirageDuJeu(ref carte[] unJeu)
+        private static void tirageDuJeu(ref carte[] unJeu)//fonctionne pas
         {
             for (int i = 0; i < 5; i++) //une boucle qui tire les 5 cartes du jeux 
             {
-                unJeu[i] = tirage();
+                do
+                {
+                    unJeu[i] = tirage();
+                } 
+                while (!carteUnique(unJeu[i], unJeu, i));
+
+
             }
         }
         // Affiche à l'écran une carte {valeur;famille} en fournisant la colonne de départ
@@ -362,7 +367,7 @@ namespace Poker  // demander si le fait
                         nom = Console.ReadLine();
                         using (f = new BinaryWriter(new FileStream("scores.txt", FileMode.Append, FileAccess.Write)))
                         {
-
+                            //Console.WriteLine();
                         }
 
                     }
@@ -382,7 +387,7 @@ namespace Poker  // demander si le fait
 
                         }
 
-                        Console.WriteLine("Nom : " + nom);
+                        //Console.WriteLine("Nom : " + nom);
                         Console.ReadKey();
                     }
                 }
