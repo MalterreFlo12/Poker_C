@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Poker  // demander si le fait 
@@ -42,7 +44,7 @@ namespace Poker  // demander si le fait
         public struct carte
         {
             public char valeur;
-            public int famille;
+            public char famille;
         };
 
         // Liste des combinaisons possibles
@@ -69,8 +71,8 @@ namespace Poker  // demander si le fait
         public static carte tirage()
         {
             carte carte;
-            int valeur = rand.Next(0,13);
-            int famille = rand.Next(0,4);// tirage aléatoir / le .Next permet determiner la tranche de numéro voulue et d'en recupéré un aléatoirement 
+            int valeur = rand.Next(0,13);// (0,13)
+            int famille = rand.Next(0,4);//(0,4) tirage aléatoir / le .Next permet determiner la tranche de numéro voulue et d'en recupéré un aléatoirement 
             carte.valeur = valeurs[valeur];// la valeur de la carte est = a l'indice dans la liste valeurs 
             carte.famille = familles[famille];// ... dans la liste familles
             return carte;
@@ -80,15 +82,18 @@ namespace Poker  // demander si le fait
         // Paramètres : une carte, le jeu 5 cartes, le numéro de la carte dans le jeu
         // Retourne un entier (booléen)
         public static bool carteUnique(carte uneCarte, carte[] unJeu, int numero)//numéro est l'emplacement de la carte la carte 1,2,3,4 ou 5...
-        {
-            if (uneCarte.valeur == unJeu[numero].valeur && uneCarte.famille == unJeu[numero].famille)//
+        {   
+            for (int i = 0; i < 5 ;i ++)//boucle de 5
             {
-                return true;
+                if (i == numero) continue;//si i = au l'enplacement de la carte et que la famille et la valeur sont = alors il retourne vrais sinon faux
+                {//le continuer permet de faire sortire de la boucle si 
+                    if (uneCarte.valeur == unJeu[i].valeur && uneCarte.famille == unJeu[i].famille)
+                    {
+                        return false;
+                    }
+                }
             }
-            else
-            {
-                return false;
-            }
+            return true;
         }
 
         // Calcule et retourne la COMBINAISON (paire, double-paire... , quinte-flush)
@@ -97,8 +102,11 @@ namespace Poker  // demander si le fait
         public static combinaison cherche_combinaison(ref carte[] unJeu)
         {
             int[] similaire = { 0, 0, 0, 0, 0 }; // Nombre de valeurs similaires dans le jeu pour chaque carte
-            int[] mfamille = { 0, 0, 0, 0, 0 };// Nombre de carte aillant le même famille 
-            char[,] quintes ={ {'X','V','D','R','A'},{'9','X','V','D','R'},{'8','9','X','V','D'},{'7','8','9','X','V'} };// les possibilité de quinte 
+            int mfamille = 0;// Nombre de carte aillant le même famille 
+            char[,] quintes ={ {'X','V','D','R','A'},{'9','X','V','D','R'},{'8','9','X','V','D'},{'7','8','9','X','V'} };// les possibilité de quinte
+            bool paire = false;
+            bool brelan= false;
+            bool quinte = false;
 
             combinaison resultat = combinaison.RIEN;// variable que l'on va appeler pour afficher le resultat a l'utilisateur 
 
@@ -112,7 +120,7 @@ namespace Poker  // demander si le fait
                     }
                     if (unJeu[i].famille == unJeu[j].famille)// si deux carte sont de la même famille alors , alros la valeur de la carte repéré fait +1 dans le tableau 'mfamille'
                     {
-                        mfamille[i]++;
+                        mfamille+=1;
                     }
                 }
             }
@@ -122,6 +130,7 @@ namespace Poker  // demander si le fait
                 if(similaire[i] == 2) // si l'indice i du tableau "similaire" est = a 2 alors il y a une paire
                 {
                     compte = compte + 1; 
+                    paire = true;
                     resultat = combinaison.PAIRE;
                 }
                 
@@ -130,52 +139,58 @@ namespace Poker  // demander si le fait
                     resultat = combinaison.DOUBLE_PAIRE;
                 }
 
-                if (similaire[i] == 4)
+                if (similaire[i] == 4)//si le tableau similaire est égale a 4 alors c'est un carré
                 {
                     resultat = combinaison.CARRE;
                 }
-                if (similaire[i] == 3)
+                if (similaire[i] == 3)// si le tableau similaire est égale a 3 alors c'est un brelan
                 {
+                    brelan = true;
                     resultat = combinaison.BRELAN;
                 }
-                if (resultat == combinaison.QUINTE && mfamille[i] == 5)
-                {
-                    resultat = combinaison.QUINTE_FLUSH;
-                }
-                if (resultat == combinaison.PAIRE && resultat == combinaison.BRELAN)
+                if (paire && brelan)// vérifie si une paire et un brelan son présent, si oui alors c'est un full
                 {
                     resultat = combinaison.FULL;
                 }
-                if (resultat != combinaison.QUINTE && mfamille[i] == 5)
-                {
-                    resultat = combinaison.COULEUR;
-                }
                 int c=0;
+                int memcarte = 0;
                 for (int l = 0; l < similaire.Length; l++)// boucle qui parcour la liste de notre mains 
                 {
                     if (similaire[l]==1)//si l'indice de la valeur du tableau est = 1 alors on rajoute 1 au compteur 
                     {
                         c += 1;
                     }
-                    if (c==5) //si le compteur est = a 5 alors on verifie si la main crrespond à une possibilité de quinte 
+                    if (c==5) //si le compteur est = a 5 alors on verifie si la main correspond à une possibilité de quinte 
                     {
-                        for (int m = 0; m < 4; m++)// 1er boucle qui regarde si la 1er carte est = a la 1er de la liste  
+                        for (int m = 0; m < 4; m++)// 1er boucle qui parcour le tableau quintes  
                         {
-                            int memcarte = 0;
-                            for(int n = 0; n < 5; n++)//2ème boucle qui vérifie les cartes suivantes de la liste pour vérifier la possibilité de quinte
+                            memcarte = 0 ;
+                            for (int k = 0; k < 5; k++)//permet de parcourire le jeux 
                             {
-                                if (unJeu[n].valeur == quintes[m,n])// si le carte est = a selle dans la liste quinte 
+                                for (int n = 0; n < 5; n++)//2ème boucle qui vérifie les cartes suivantes de la liste pour vérifier la possibilité de quinte
                                 {
-                                    memcarte = memcarte + 1;// on rajoute 1 au "conteur" 
-                                }
-                                if (memcarte == 5)//si le conteur est = 5 cela veut dire que c'est une quinte
-                                {
-                                    resultat = combinaison.QUINTE;
+                                    if (unJeu[k].valeur == quintes[m, n])// si le carte est = a selle dans la liste quinte 
+                                    {
+                                        memcarte = memcarte + 1;// on rajoute 1 au "conteur" 
+                                    }
+                                    if (memcarte == 5)//si le conteur est = 5 cela veut dire que c'est une quinte
+                                    {
+                                        quinte = true;
+                                        resultat = combinaison.QUINTE;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            }
+            if (quinte == false && mfamille == 25)// si il n'y a pas de quinte et que la fammille est = 25 c'est une couleur 
+            {
+                resultat = combinaison.COULEUR;
+            }
+            if (quinte && mfamille == 25)// si il y a une quinte et que la famille est = 25 c'est une quinte flush
+            {
+                resultat = combinaison.QUINTE_FLUSH;
             }
             return resultat;
         }
@@ -184,9 +199,13 @@ namespace Poker  // demander si le fait
         // Paramètres : le tableau de 5 cartes et le tableau des numéros des cartes à échanger
         private static void echangeCarte(ref carte[] unJeu, ref int[] e)
         {
-            for (int i = 0; i < e.Length; i++) // e est un tableau qui contien les position des cartes que l'on veut échanger et les remplace par de nouvelles cartes grâce à la fonction tirage 
+            for (int i = 0; i < e.Length; i++) // e est un tableau qui contient les position des cartes que l'on veut échanger et les remplace par de nouvelles cartes grâce à la fonction tirage 
             {
-                unJeu[e[i]] = tirage();
+                int a = e[i];
+                do
+                {
+                    unJeu[a] = tirage();
+                } while (!carteUnique(unJeu[e[i]], unJeu, a));
             }
         }
 
@@ -201,8 +220,6 @@ namespace Poker  // demander si le fait
                     unJeu[i] = tirage();
                 } 
                 while (!carteUnique(unJeu[i], unJeu, i));
-
-
             }
         }
         // Affiche à l'écran une carte {valeur;famille} en fournisant la colonne de départ
@@ -365,30 +382,56 @@ namespace Poker  // demander si le fait
                         const string fileName = "scores.txt";
                         Console.WriteLine("Vous pouvez saisir votre nom (ou pseudo) : ");
                         nom = Console.ReadLine();
-                        using (f = new BinaryWriter(new FileStream("scores.txt", FileMode.Append, FileAccess.Write)))
+                        using (f = new BinaryWriter(new FileStream("scores.txt", FileMode.Create, FileAccess.Write)))
                         {
-                            //Console.WriteLine();
+                            f.Write(nom);
+                            for (int a  = 0; a < 5; a++)
+                            {
+                                f.Write(MonJeu[a].valeur);
+                                f.Write(MonJeu[a].famille);
+                            }
+                            f.Close();
                         }
-
                     }
-
                 }
                if(reponse == "2")
-                {
+               {
                     string articles;
                     char[] délimiteurs = { ';' };
                     carte UneCarte;
                     string nom;
+                    char a ;
+                    Array a1;
                     if (File.Exists("scores.txt"))
                     {
                         using (BinaryReader f = new BinaryReader(new FileStream("scores.txt", FileMode.Open, FileAccess.Read)))
                         {
-      
-
+                            nom = f.ReadString();
+                            for (int w = 0; w < 5; w++) {
+                                MonJeu[w].valeur = f.ReadChar();
+                                a = f.ReadChar();
+                                if (char.ToString(a) == "")
+                                {
+                                    MonJeu[w].famille = '\u2665';
+                                }
+                                if (char.ToString(a) == "")
+                                {
+                                    MonJeu[w].famille = '\u2666';
+                                }
+                                if (char.ToString(a) == "")
+                                {
+                                    MonJeu[w].famille = '\u2663';
+                                }
+                                if (char.ToString(a) == "")
+                                {
+                                    MonJeu[w].famille = '\u2660';
+                                }
+                                a1 = f.ReadChars(3);
+                            }
                         }
-
-                        //Console.WriteLine("Nom : " + nom);
-                        Console.ReadKey();
+                            Console.WriteLine("Nom : " + nom);
+                            affichageCarte(ref MonJeu[0]);
+                            Console.ReadKey();
                     }
                 }
 
@@ -401,3 +444,8 @@ namespace Poker  // demander si le fait
         }
     }
 }
+/*read me:
+ resumé
+contexte + comment on a chiffré
+presentation des fonction 
+*/
